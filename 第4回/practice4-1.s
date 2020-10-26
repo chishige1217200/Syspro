@@ -1,6 +1,8 @@
     .text
     .align 2
 main:
+        move    $s0, $ra    # mainを呼んだ戻り先のアドレスを$s0に保存しておく
+
         la      $a0, msg    # msgのアドレスを$a0にロード
         li      $v0, 4      # print_string
         syscall             # システムコールの実行
@@ -11,6 +13,8 @@ main:
         move    $a0, $v0    # $a0に$v0の値をコピー
         li      $v0, 1      # print_int
         syscall             # システムコールの実行
+
+        move    $ra, $s0    # mainを呼んだ戻り先のアドレスを$raに代入
         j       $ra         # コンソールに戻る
 
 fact_start:
