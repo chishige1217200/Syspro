@@ -7,8 +7,8 @@ main:
         li      $v0, 4      # print_string
         syscall             # システムコールの実行
 
-        li      $a0, 10     # $a0に10を代入
-        # スタックポインタの確保?
+        li      $a0, 10     # $a0に10を代入(任意のint値)
+
         jal     fact_start  # fact_startに飛ぶ
         move    $a0, $v0    # $a0に$v0の値をコピー
         li      $v0, 1      # print_int
