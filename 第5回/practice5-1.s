@@ -9,7 +9,6 @@ main:
 loop:
     move    $a0, $s0        # $s0の値を$a0にコピー
     jal     prime           # primeのアドレスにジャンプ(次の命令のアドレスを$raに)
-
     beqz    $v0, R1         # $v0が0ならば，R1に分岐
     move    $a0, $v0        # $v0の値を$a0にコピー
     li      $v0, 1          # $v0に1を代入(print_int)
@@ -29,14 +28,13 @@ end:
     lw      $fp, 16($sp)    # 保存しておいた$fpを復元
     addu    $sp, $sp, 32    # スタックを開放
     j       $ra             # コンソールに戻る
-
 prime:
     li      $t0, 1          # $t0に1を代入
     move    $t1, $a0        # $t1に$a0の値をコピー
 prime_loop:
     div     $t1, $t0, $t2   # $t1を$t0で割った結果を$t2に代入する
     beq     $t0, $t1, prime_R1 # $t0と$t1が等しいときprime_R1のアドレスにジャンプ
-    beq     $t2, $zero, prime_R2 # $t2が0ならprime_R2のアドレスにジャンプ
+    beqz     $t2, prime_R2  # $t2が0ならprime_R2のアドレスにジャンプ
     addi    $t0, 1          # $t0に1を加える
     j       prime_loop      # prime_loopのアドレスにジャンプ
 prime_R1:
