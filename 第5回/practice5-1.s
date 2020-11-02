@@ -1,12 +1,14 @@
     .text
     .align 2
 main:
-    move    $s1, $ra
+    move    $s2, $ra
     li      $s0, 2          # $s0に2を格納
+    li      $s1, 0          # $s1に0を格納
 loop:
     move    $a0, $s0        # $s0の値を$a0にコピー
     jal     prime           # primeのアドレスにジャンプ(次の命令のアドレスを$raに)
     beqz    $v0, r1         # $v0が0ならば，R1に分岐
+    addi    $s1, 1          # $s1に1を加える
     move    $a0, $s0        # $v0の値を$a0にコピー
     li      $v0, 1          # $v0に1を代入(print_int)
     syscall
@@ -14,7 +16,7 @@ loop:
     li      $v0, 4          # $v0に4を代入(print_str)
     syscall
 r1:
-    bge     $s0, 100, end   # $s0が100以上のとき，endにジャンプ
+    bge     $s1, 100, end   # $s1が100以上のとき，endにジャンプ
     addi    $s0, 1          # $s0に1を加える
     j       loop            # loopのアドレスにジャンプ
 end:
@@ -22,9 +24,9 @@ end:
     li      $v0, 4          # $v0に4を代入(print_str)
     syscall
 
-    move    $ra, $s1
+    move    $ra, $s2
     j       $ra             # コンソールに戻る
-        
+
 prime:
     li      $t0, 2          # $t0に2を代入
     move    $t1, $a0        # $t1に$a0の値をコピー
