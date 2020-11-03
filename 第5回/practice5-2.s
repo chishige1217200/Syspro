@@ -1,30 +1,48 @@
     .text
     .align 2
 main:
-    move    $s2, $ra
-    li      $s0, 2          # $s0に2を格納
-    li      $s1, 0          # $s1に0を格納
+    move    $s2, $ra        # $s2にmainを呼び出した元のアドレスを格納
+    li      $s0, 2          # $s0に2を格納(検索する数)
+    li      $s1, 0          # $s1に0を格納(素数の個数カウント)
+    la      $s3, prime_array# $s3にprime_arrayのアドレスをロード
 loop:
     move    $a0, $s0        # $s0の値を$a0にコピー
     jal     prime           # primeのアドレスにジャンプ(次の命令のアドレスを$raに)
     beqz    $v0, r1         # $v0が0ならば，R1に分岐
     addi    $s1, 1          # $s1に1を加える
-    move    $a0, $s0        # $v0の値を$a0にコピー
-    li      $v0, 1          # $v0に1を代入(print_int)
-    syscall
-    la      $a0, space      # spaceのアドレスを$a0にロード
-    li      $v0, 4          # $v0に4を代入(print_str)
-    syscall
+    # ここで配列にデータを格納
+    move    $t0, $s1        # $s1の値を$t0にコピー
+    mulo    $t0, $t0, 4     # $t0を4倍(4byte区切り)
+    add     $t0, $t0, $s3   # $t0と$s3を足して$t0に格納
+    sw      $s0, 0($t0)     # $s0の値を配列上にコピー
 r1:
-    bge     $s1, 100, end   # $s1が100以上のとき，endにジャンプ
+    bge     $s1, 100, loop2 # $s1が100以上のとき，loop2にジャンプ
     addi    $s0, 1          # $s0に1を加える
     j       loop            # loopのアドレスにジャンプ
-end:
+loop2:
+    la      $a0, indicate   # indicateのアドレスを$a0にロード
+    li      $v0, 4          # $v0に4を代入(print_str)
+    syscall                 # >を印字
+    #入力受付
+    li      $v0, 5          # read_int(戻り値は$v0に，1~100のみ入力可)
+    syscall                 # 読み取り
+    # 例外確認
+    bge     $v0, 101, end   # 入力が101以上の場合，終了
+    ble     $v0, 0, end     # 入力が0以下の場合，終了
+    # 正しい番地を計算
+    move    $t0, $v0        # $v0の値を$t0にコピー
+    mulo    $t0, $t0, 4     # $t0を4倍(4byte区切り)
+    add     $t0, $t0, $s3   # $t0と$s3を足して$t0に格納
+    # 配列から読みだした値を表示
+    lw      $a0, 0($t0)     # $s0の値を配列上にコピー
+    li      $v0, 1          # $v0に1を代入(print_int)
+    syscall
     la      $a0, line       # lineのアドレスを$a0にロード
     li      $v0, 4          # $v0に4を代入(print_str)
-    syscall
-
-    move    $ra, $s2
+    syscall                 # \nを印字
+    j       loop2
+end:
+    move    $ra, $s2        # mainを呼び出した元のアドレスを$raに復元
     j       $ra             # コンソールに戻る
 
 prime:
@@ -46,8 +64,8 @@ prime_end:
 
     .data
     .align 2
-space:
-    .asciiz " "
+indicate:
+    .asciiz ">"
     .align 2
 line:
     .asciiz "\n"

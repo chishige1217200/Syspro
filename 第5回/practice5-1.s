@@ -9,7 +9,7 @@ loop:
     jal     prime           # primeのアドレスにジャンプ(次の命令のアドレスを$raに)
     beqz    $v0, r1         # $v0が0ならば，R1に分岐
     addi    $s1, 1          # $s1に1を加える
-    move    $a0, $s0        # $v0の値を$a0にコピー
+    move    $a0, $s0        # $s0の値を$a0にコピー
     li      $v0, 1          # $v0に1を代入(print_int)
     syscall
     la      $a0, space      # spaceのアドレスを$a0にロード
