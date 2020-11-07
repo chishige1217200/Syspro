@@ -37,7 +37,7 @@ fact:
         lw      $fp, 16($sp)            # 保存しておいた$fpを復元
         addu    $sp, $sp, 32            # スタックを開放
         j       $ra                     # 呼び出し元に戻る
-else:   
+else:
         addi    $a0, -1                 # $a0から1を引く
         jal     fact                    # 呼び出し元に戻る
 
