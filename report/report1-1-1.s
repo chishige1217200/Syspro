@@ -12,7 +12,7 @@ loop:
     lb      $a1, 0($a0)     # a0の指し先の値を$a1にロードする
     beqz    $a1, end        # a1が0のとき，endへ
     jal     print           # printのアドレスにジャンプ(次の命令のアドレスを$raに)
-    addi    $a0, $a0, 1     # $a0に1を加える
+    addi    $a0, 1          # $a0に1を加える
     j       loop            # mainのアドレスにジャンプ
 print:
     lw      $t0, 0xffff0008 # 0xffff0008番地にあるワードを$t0にロードする
