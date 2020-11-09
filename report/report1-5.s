@@ -9,14 +9,14 @@ loop:
     move    $a0, $s0        # $s0の値を$a0にコピー
     jal     test_prime      # test_primeのアドレスにジャンプ(次の命令のアドレスを$raに)
     beqz    $v0, r1         # $v0が0ならば，r1に分岐
-    addi    $s1, 1          # $s1に1を加える
     # ここで配列にデータを格納
     move    $t0, $s1        # $s1の値を$t0にコピー
     mulo    $t0, $t0, 4     # $t0を4倍(4byte区切り)
     add     $t0, $t0, $s3   # $t0と$s3を足して$t0に格納
     sw      $s0, 0($t0)     # $s0の値を配列上にコピー
+    addi    $s1, 1          # $s1に1を加える
 r1:
-    bge     $s1, 100, loop2 # $s1が100以上のとき，loop2にジャンプ
+    bgt     $s1, 100, loop2 # $s1が100より大きいとき，loop2にジャンプ
     addi    $s0, 1          # $s0に1を加える
     j       loop            # loopのアドレスにジャンプ
 loop2:
@@ -29,6 +29,7 @@ loop2:
     ble     $v0, 0, end     # 入力が0以下の場合，終了
     # 正しい番地を計算
     move    $t0, $v0        # $v0の値を$t0にコピー
+    addi    $t0, -1         # $t0から1を引く
     mulo    $t0, $t0, 4     # $t0を4倍(4byte区切り)
     add     $t0, $t0, $s3   # $t0と$s3を足して$t0に格納
     # 配列から読みだした値を表示
