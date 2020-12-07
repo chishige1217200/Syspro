@@ -13,7 +13,7 @@ _print_int:
     addiu   $ra,    24          # スタックを解放
     j       $ra                 # 呼び出し元に戻る
 
-_print_str:
+_print_string:
     addiu   $sp,    24          # スタックの積立
     sw      $ra,    20($sp)     # $raレジスタの値をスタックに退避
 
@@ -35,7 +35,7 @@ _read_int:
     addiu   $ra,    24          # スタックを解放
     j       $ra                 # 呼び出し元に戻る
 
-_read_str:
+_read_string:
     addiu   $sp,    24          # スタックの積立
     sw      $ra,    20($sp)     # $raレジスタの値をスタックに退避
 
