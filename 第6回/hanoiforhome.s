@@ -1,32 +1,34 @@
 	.file	1 "hanoi.c"
 
- # -G value = 0, Arch = r2000, ISA = 1
- # GNU C version 2.96 20000731 (Red Hat Linux 7.3 2.96-113.2) (mipsel-linux) compiled by GNU C version 2.96 20000731 (Red Hat Linux 7.3 2.96-113.2).
- # options passed:  -mno-abicalls -mrnames -mmips-as
- # -mno-check-zero-division -march=r2000 -O0 -fleading-underscore
- # -finhibit-size-directive -fverbose-asm
- # options enabled:  -fpeephole -ffunction-cse -fkeep-static-consts
- # -fpcc-struct-return -fsched-interblock -fsched-spec -fbranch-count-reg
- # -fnew-exceptions -fcommon -finhibit-size-directive -fverbose-asm
- # -fgnu-linker -fargument-alias -fleading-underscore -fident -fmath-errno
- # -mrnames -mno-check-zero-division -march=r2000
+ # -G value = 0, Cpu = r2000, ISA = 1
+ # GNU C version 2.96-mips3264-000710 (mipsel-linux) compiled by GNU C version 2.96 20000731 (Red Hat Linux 7.2 2.96-112.7.2).
+ # [AL 1.1, MM 40] BSD Mips
+ # options passed:  -mno-abicalls -mrnames -mmips-as -mcpu=r2000 -O0
+ # -fleading-underscore -finhibit-size-directive -fverbose-asm
+ # options enabled:  -fpeephole -fkeep-static-consts -fpcc-struct-return
+ # -fsched-interblock -fsched-spec -fnew-exceptions -fcommon
+ # -finhibit-size-directive -fverbose-asm -fgnu-linker -flive-range-gdb
+ # -fargument-alias -fleading-underscore -fdelay-postincrement -fident
+ # -fmath-errno -msplit-addresses -mrnames -mdebugf -mdebugi -mcpu=r2000
 
 
 	.rdata
+	.align	0
 	.align	2
 $LC0:
-	.asciiz	"Move disk "
+	.ascii	"Move disk \000"
 	.align	2
 $LC1:
-	.asciiz	" from peg "
+	.ascii	" from peg \000"
 	.align	2
 $LC2:
-	.asciiz	" to peg "
+	.ascii	" to peg \000"
 	.align	2
 $LC3:
-	.asciiz	".\n"
+	.ascii	".\n\000"
 	.text
 	.align	2
+	.set	nomips16
 _hanoi:
 	subu	$sp,$sp,24
 	sw	$ra,20($sp)
@@ -73,11 +75,13 @@ $L3:
 	addu	$sp,$sp,24
 	j	$ra
 	.rdata
+	.align	0
 	.align	2
 $LC4:
-	.asciiz	"Enter number of disks> "
+	.ascii	"Enter number of disks> \000"
 	.text
 	.align	2
+	.set	nomips16
 main:
 	subu	$sp,$sp,32
 	sw	$ra,28($sp)
