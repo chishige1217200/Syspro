@@ -82,4 +82,4 @@ main:
 	addu	$sp,$sp,64			# スタックの解放
 	j	$ra						# 呼び出し元に戻る
 
-	.comm	_primes_stat,40
+	.comm	_primes_stat,40		# データセグメントに40バイト確保
