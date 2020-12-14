@@ -12,74 +12,74 @@
  # -mrnames -mno-check-zero-division -march=r2000
 
 
-	.rdata
-	.align	2
+	.rdata				# 読み取り専用データセグメント
+	.align	2			# バイト揃え
 $LC0:
-	.asciiz	"ABCDEFG"
-	.data
-	.align	2
-_string_ptr:
-	.word	$LC0
-	.align	2
-_string_ary:
-	.asciiz	"ABCDEFG"
-	.rdata
-	.align	2
+	.asciiz	"ABCDEFG"	# 文字列情報
+	.data				# データセグメント
+	.align	2			# バイト揃え
+_string_ptr:			# ポインタ
+	.word	$LC0		# アドレスを参照
+	.align	2			# バイト揃え
+_string_ary:			# 配列
+	.asciiz	"ABCDEFG"	# 文字列情報
+	.rdata				# 読み取り専用データセグメント
+	.align	2			# バイト揃え
 $LC1:
-	.asciiz	" = "
-	.align	2
+	.asciiz	" = "		# 文字列情報
+	.align	2			# バイト揃え
 $LC2:
-	.asciiz	"\n"
-	.text
-	.align	2
+	.asciiz	"\n"		# 文字列情報
+	.text				# テキストセグメント
+	.align	2			# バイト揃え
 _print_var:
-	subu	$sp,$sp,24
-	sw	$ra,20($sp)
-	sw	$fp,16($sp)
-	move	$fp,$sp
-	sw	$a0,24($fp)
-	sw	$a1,28($fp)
-	lw	$a0,24($fp)
-	jal	_print_string
-	la	$a0,$LC1
-	jal	_print_string
-	lw	$a0,28($fp)
-	jal	_print_int
-	la	$a0,$LC2
-	jal	_print_string
-	move	$sp,$fp
-	lw	$ra,20($sp)
-	lw	$fp,16($sp)
-	addu	$sp,$sp,24
-	j	$ra
-	.rdata
-	.align	2
+	subu	$sp,$sp,24	# スタックの積立（24バイト）
+	sw	$ra,20($sp)		# $sp + 20番地のアドレスに$raの値をバックアップ
+	sw	$fp,16($sp)		# $sp + 16番地のアドレスに$fpの値をバックアップ
+	move	$fp,$sp		# $spの値で$fpを上書き
+	sw	$a0,24($fp)		# $fp($sp) + 24番地のアドレスに$a0の値をバックアップ（境界跨ぎ）
+	sw	$a1,28($fp)		# $fp($sp) + 28番地のアドレスに$a1の値をバックアップ（境界跨ぎ）
+	lw	$a0,24($fp)		# 元$a0の値のバックアップをスタックからロード（同時にprint_stringの引数に）
+	jal	_print_string	# print_stringの呼び出し
+	la	$a0,$LC1		# "="を指すアドレスを$a0にロード
+	jal	_print_string	# print_stringの呼び出し
+	lw	$a0,28($fp)		# 元$a1の値のバックアップをスタックからロード（同時にprint_stringの引数に）
+	jal	_print_int		# print_intの呼び出し
+	la	$a0,$LC2		# "\n"を指すアドレスを$a0にロード
+	jal	_print_string	# print_stringの呼び出し
+	move	$sp,$fp		# $fpの値で$spを上書き
+	lw	$ra,20($sp)		# $sp + 20番地のアドレスから$raの値を復元
+	lw	$fp,16($sp)		# $sp + 16番地のアドレスから$fpの値を復元
+	addu	$sp,$sp,24	# スタックの解放
+	j	$ra				# 呼び出し元に戻る
+	.rdata				# 読み取り専用テキストセグメント
+	.align	2			# バイト揃え
 $LC3:
-	.asciiz	"primes_stat[0]"
-	.align	2
+	.asciiz	"primes_stat[0]"	# 文字列情報
+	.align	2					# バイト揃え
 $LC4:
-	.asciiz	"primes_auto[0]"
-	.text
-	.align	2
+	.asciiz	"primes_auto[0]"	# 文字列情報
+	.text						# テキストセグメント
+	.align	2					# バイト揃え
 main:
-	subu	$sp,$sp,64
-	sw	$ra,60($sp)
-	sw	$fp,56($sp)
-	move	$fp,$sp
-	li	$v0,2			# 0x2
-	sw	$v0,_primes_stat
-	li	$v0,3			# 0x3
-	sw	$v0,16($fp)
-	la	$a0,$LC3
-	lw	$a1,_primes_stat
-	jal	_print_var
-	la	$a0,$LC4
-	lw	$a1,16($fp)
-	jal	_print_var
-	move	$sp,$fp
-	lw	$ra,60($sp)
-	lw	$fp,56($sp)
-	addu	$sp,$sp,64
-	j	$ra
+	subu	$sp,$sp,64			# スタックの積立（64バイト）
+	sw	$ra,60($sp)				# $sp + 60番地のアドレスに$raの値をバックアップ
+	sw	$fp,56($sp)				# $sp + 56番地のアドレスに$fpの値をバックアップ
+	move	$fp,$sp				# $spの値で$fpを上書き
+	li	$v0,2					# 0x2
+	sw	$v0,_primes_stat		# _primes_statに対応するラベルのメモリ上のアドレスに$v0の値を保存
+	li	$v0,3					# 0x3
+	sw	$v0,16($fp)				# $fp($sp) + 16番地のアドレスに$v0の値をバックアップ
+	la	$a0,$LC3				# "primes_stat[0]"を指すアドレスを$a0にロード
+	lw	$a1,_primes_stat		# _primes_statに対応するラベルのメモリ上のアドレスの値を$a1にロード
+	jal	_print_var				# print_varの呼び出し
+	la	$a0,$LC4				# "primes_auto[0]"を指すアドレスを$a0にロード
+	lw	$a1,16($fp)				# 元$v0の値のバックアップをスタックから$a1にロード（同時にprint_stringの引数に）
+	jal	_print_var				# print_varの呼び出し
+	move	$sp,$fp				# $fpの値で$spを上書き
+	lw	$ra,60($sp)				# $sp + 60番地のアドレスから$raの値を復元
+	lw	$fp,56($sp)				# $sp + 56番地のアドレスから$fpの値を復元
+	addu	$sp,$sp,64			# スタックの解放
+	j	$ra						# 呼び出し元に戻る
 
 	.comm	_primes_stat,40
