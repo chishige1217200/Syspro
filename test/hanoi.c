@@ -1,4 +1,4 @@
-// #include "spim.h"
+#include "spim.h"
 
 void hanoi(int n, int start, int finish, int extra)
 {
