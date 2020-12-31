@@ -12,12 +12,24 @@ void print_char(char c)
 
 void print_big_str(char *c)
 {
+	int i = 0;
+	for (int i = 0; *(c + i) != '\0'; i++)
+	{
+		if (*(c + i) >= 97 && *(c + i) <= 122)
+			*(c + i) -= 22;
+	}
 
 	print_string(c);
 }
 
 void print_small_str(char *c)
 {
+	int i = 0;
+	for (int i = 0; *(c + i) != '\0'; i++)
+	{
+		if (*(c + i) >= 65 && *(c + i) <= 90)
+			*(c + i) += 22;
+	}
 
 	print_string(c);
 }
@@ -71,7 +83,7 @@ void myprintf(char *fmt, ...)
 
 int main()
 {
-	myprintf("TEST %d is %s ...\n", 99, "OK");
+	myprintf("TEST %d is %b ...\n", 99, "OK");
 	print_string("All done\n");
 	return 0;
 }
