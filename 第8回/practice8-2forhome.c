@@ -10,28 +10,28 @@ void print_char(char c)
 	print_string(s);
 }
 
-void print_big_str(char *c)
+void print_big_str(char *s)
 {
 	int i = 0;
-	for (int i = 0; *(c + i) != '\0'; i++)
+	for (i = 0; *(s + i) != '\0'; i++)
 	{
-		if (*(c + i) >= 97 && *(c + i) <= 122)
-			*(c + i) -= 22;
+		if (*(s + i) >= 97 && *(s + i) <= 122)
+			*(s + i) -= 32;
 	}
 
-	print_string(c);
+	print_string(s);
 }
 
-void print_small_str(char *c)
+void print_small_str(char *s)
 {
 	int i = 0;
-	for (int i = 0; *(c + i) != '\0'; i++)
+	for (i = 0; *(s + i) != '\0'; i++)
 	{
-		if (*(c + i) >= 65 && *(c + i) <= 90)
-			*(c + i) += 22;
+		if (*(s + i) >= 65 && *(s + i) <= 90)
+			*(s + i) = *(s + i) + 32;
 	}
 
-	print_string(c);
+	print_string(s);
 }
 
 void print_hex_int(int i)
@@ -42,6 +42,7 @@ void myprintf(char *fmt, ...)
 {
 	int i, argc = 0;
 	char *s;
+	char c;
 
 	while (*fmt)
 	{
@@ -60,8 +61,8 @@ void myprintf(char *fmt, ...)
 				print_string(s);
 				break;
 			case 'c':
-				s = *((char **)((char *)&fmt + argc * sizeof(void *)));
-				print_char(*s);
+				c = *((char *)((char *)&fmt + argc * sizeof(void *)));
+				print_char(c);
 				break;
 			case 'b': // すべて小文字で表示
 				s = *((char **)((char *)&fmt + argc * sizeof(void *)));
@@ -83,7 +84,7 @@ void myprintf(char *fmt, ...)
 
 int main()
 {
-	myprintf("TEST %d is %b ...\n", 99, "OK");
+	myprintf("TEST %d %c is %s ...\n", 99, 'a', "OK");
 	print_string("All done\n");
 	return 0;
 }
