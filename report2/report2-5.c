@@ -123,7 +123,63 @@ void myscanf(char *fmt, ...)
 
 int main()
 {
-    myprintf("TEST %d %c is %B ...\n", 99, 'a', "ok");
-    print_string("All done\n");
+    int out = 0;
+    int in;
+    char m;
+    char flag;
+
+    myprintf("Starting %b...\n", "CALCULATOR");
+
+    while (1)
+    {
+        myprintf("Please select the calc mode. (\"+\" or \"-\" or \"*\" or \"/\" or \"0\" or \"C\" or \"Q\")\nMode? : ", out);
+        myscanf("%c", &m);
+        if (m == 'Q')
+            break;
+        if (m == '0')
+        {
+            myprintf("Do you want to reset output? (y or n)\n");
+            myscanf("%c", &flag);
+            if (flag == 'y')
+            {
+                myprintf("Reset output.\n\n");
+                out = 0;
+            }
+            else
+                myprintf("Operation cancelled.\n");
+
+            continue;
+        }
+        if (m == 'C')
+        {
+            myprintf("Result : %d\n\n", out);
+            continue;
+        }
+
+        if (m != '+' && m != '-' && m != '*' && m != '/')
+        {
+            myprintf("Please select the correct mode.\n\n");
+            continue;
+        }
+
+        myprintf("Please input the number.(int type ONLY)\nNumber? : ");
+        myscanf("%d", &in);
+
+        if (m == '+')
+            out = out + in;
+        if (m == '-')
+            out = out - in;
+        if (m == '*')
+            out = out * in;
+        if (m == '/')
+            if (in != 0)
+                out = out / in;
+            else
+                myprintf("Cannot divide by zero.\nOperarion denied.\n");
+
+        myprintf("Result : %d\n\n", out);
+    }
+    myprintf("%B : %d", "final result", out);
+    myprintf("\nQuit.\n");
     return 0;
 }
