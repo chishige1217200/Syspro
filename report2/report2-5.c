@@ -4,21 +4,21 @@ void print_char(char c)
 {
     char s[2]; // バッファー(2文字目は終端文字)
 
-    s[0] = c;       // 1文字目代入
-    s[1] = '\0';    // 終端文字代入
+    s[0] = c;    // 1文字目代入
+    s[1] = '\0'; // 終端文字代入
 
     print_string(s); // 文字列表示
 }
 
 void print_big_str(char *s)
 {
-    int i = 0;  // オフセット指定用
-    char c;     // 1文字バッファー
+    int i = 0; // オフセット指定用
+    char c;    // 1文字バッファー
 
     for (i = 0; *(s + i * sizeof(char)) != '\0'; i++)
     {
         c = *(s + i * sizeof(char)); // 次の文字情報をcに代入
-        if (c >= 97 && c <= 122) // 小文字なら大文字へ
+        if (c >= 97 && c <= 122)     // 小文字なら大文字へ
             c -= 32;
         print_char(c); // 1文字表示
     }
@@ -26,40 +26,40 @@ void print_big_str(char *s)
 
 void print_small_str(char *s)
 {
-    int i = 0;  // オフセット指定用
-    char c;     // 1文字バッファー
+    int i = 0; // オフセット指定用
+    char c;    // 1文字バッファー
 
     for (i = 0; *(s + i * sizeof(char)) != '\0'; i++)
     {
         c = *(s + i * sizeof(char)); // 次の文字情報をcに代入
-        if (c >= 65 && c <= 90) // 大文字なら小文字へ
+        if (c >= 65 && c <= 90)      // 大文字なら小文字へ
             c += 32;
         print_char(c); // 1文字表示
     }
 }
 
-char read_char()    // 1文字入力関数
+char read_char() // 1文字入力関数
 {
     char buf[1025]; // 入力文字数は最大1024文字
     char c;         // 最初の1文字を格納
 
     read_string(buf, 1025); // 入力受付
-    c = buf[0];     // 最初の1文字をcに代入
+    c = buf[0];             // 最初の1文字をcに代入
     return c;
 }
 
 void myprintf(char *fmt, ...)
 {
-    int i;          // 引数から受け取ったint値を代入
-    int argc = 0;   // 何番目の引数か
-    char c;         // 引数から受け取ったASCIIコードを代入
-    char *s;        // 引数となる文字列の先頭アドレスを格納
+    int i;        // 引数から受け取ったint値を代入
+    int argc = 0; // 何番目の引数か
+    char c;       // 引数から受け取ったASCIIコードを代入
+    char *s;      // 引数となる文字列の先頭アドレスを格納
 
     while (*fmt)
     {
         if (*fmt == '%')
         {
-            fmt++; // 検索対象文字列を1文字右へ
+            fmt++;  // 検索対象文字列を1文字右へ
             argc++; // 引数のカウント数を1増やす
             switch (*fmt)
             {
@@ -95,9 +95,9 @@ void myprintf(char *fmt, ...)
 
 void myscanf(char *fmt, ...) //引数は1個まで
 {
-    int *i;         // 引数となる変数のアドレスを格納
-    char *c;        // 引数となる変数のアドレスを格納
-    char *s;        // 引数となる変数のアドレスを格納
+    int *i;  // 引数となる変数のアドレスを格納
+    char *c; // 引数となる変数のアドレスを格納
+    char *s; // 引数となる変数のアドレスを格納
 
     while (*fmt)
     {
@@ -106,15 +106,15 @@ void myscanf(char *fmt, ...) //引数は1個まで
             fmt++; // 検索対象文字列を1文字右へ
             switch (*fmt)
             {
-            case 'd': // 数値の入力
+            case 'd':                                           // 数値の入力
                 i = *((int **)((char *)&fmt + sizeof(void *))); // 代入先情報
                 *i = read_int();
                 break;
-            case 's': // 文字列の入力
+            case 's':                                            // 文字列の入力
                 s = *((char **)((char *)&fmt + sizeof(void *))); // 代入先情報
                 read_string(s, 1025);
                 break;
-            case 'c': // 1文字入力
+            case 'c':                                            // 1文字入力
                 c = *((char **)((char *)&fmt + sizeof(void *))); // 代入先情報
                 *c = read_char();
                 break;
@@ -124,14 +124,15 @@ void myscanf(char *fmt, ...) //引数は1個まで
     }
 }
 
-int main()                      // 整数専用の電卓
+int main() // 整数専用の電卓
 {
-    int out = 0;                // 計算結果
-    int in;                     // 計算用の入力数値
-    char mode;                  // mode選択用
-    char flag;                  // y or n フラグ用
-    char his_operand;           // 履歴を1回分保存
-    int his_num = 0;            // 履歴を1回分保存
+    int out = 0;        // 計算結果
+    int in;             // 計算用の入力数値
+    char mode = 'f';    // mode選択用
+    char flag;          // y or n フラグ用
+    int checkflag = -1; // inの入力の是非(-1:初回時のみ)
+    char his_operand;   // 履歴を1回分保存
+    int his_num = 0;    // 履歴を1回分保存
 
     myprintf("Starting %b...\n", "CALCULATOR");
 
@@ -139,13 +140,14 @@ int main()                      // 整数専用の電卓
     {
         myprintf("Please select the calc mode. (\"+\" or \"-\" or \"*\" or \"/\" or \"0\" or \"c\" or \"q\")\nMode? : ", out);
         myscanf("%c", &mode); // mode選択
-        if (mode == 'q') // Qを選択した場合
-            break;       // whileループを抜ける
+        if (mode == 'q')      // qを選択した場合
+            break;            // whileループを抜ける
+
         if (mode == '0') // '0'を選択した場合
         {
             myprintf("Do you want to reset output? (y or n)\n");
             myscanf("%c", &flag); // フラグ選択
-            if (flag == 'y') // yを選択した場合
+            if (flag == 'y')      // yを選択した場合
             {
                 myprintf("Reset output.\n\n");
                 out = 0; // 計算結果を0にリセット
@@ -155,10 +157,33 @@ int main()                      // 整数専用の電卓
 
             continue;
         }
-        if (mode == 'c') // Cを選択した場合
+
+        if (mode == 'c') // cを選択した場合
         {
             myprintf("Result : %d\n\n", out); // 確認用に結果を出力
-            continue; // ループ先頭に戻る
+            continue;                         // ループ先頭に戻る
+        }
+
+        if (mode == 'h') // hを選択した場合
+        {
+            if (checkflag == -1)
+            {
+                myprintf("Cannot use history func before calculating once.\n\n");
+                continue;
+            }
+            myscanf("%c", &flag); // フラグ選択
+            if (flag == 'y')      // yを選択した場合
+            {
+                myprintf("Calculated %c%d again.\n", his_operand, his_num);
+                mode = his_operand;
+                in = his_num;
+                checkflag = 1; // inに値を代入したため
+            }
+            else
+            {
+                myprintf("Operation cancelled.\n");
+                continue;
+            }
         }
 
         if (mode != '+' && mode != '-' && mode != '*' && mode != '/') // モードを正しく選択しなかった場合
@@ -167,8 +192,11 @@ int main()                      // 整数専用の電卓
             continue;
         }
 
-        myprintf("Please input the number.(int type ONLY)\nNumber? : ");
-        myscanf("%d", &in); // 整数の入力値受付
+        if (checkflag == 0)
+        {
+            myprintf("Please input the number.(int type ONLY)\nNumber? : ");
+            myscanf("%d", &in); // 整数の入力値受付
+        }
 
         his_operand = mode; // historyに入力モードを登録
         his_num = in;       // historyに入力数値を登録
@@ -186,6 +214,7 @@ int main()                      // 整数専用の電卓
                 myprintf("Cannot divide by zero.\nOperarion denied.\n");
 
         myprintf("Result : %d\n\n", out); // 演算後に結果出力
+        checkflag = 0;                    // inは未入力
     }
     myprintf("%B : %d", "final result", out); // 最終結果出力
     myprintf("\nQuit.\n");
