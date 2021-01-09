@@ -138,22 +138,22 @@ int main() // 整数専用の電卓
 
     while (1)
     {
-        myprintf("Please select the calc mode. (\"+\" or \"-\" or \"*\" or \"/\" or \"0\" or \"c\" or \"q\")\nMode? : ", out);
+        myprintf("Please select the calc mode. (\"+\" or \"-\" or \"*\" or \"/\" or \"0\" or \"c\" or \"h\" or \"q\")\nMode? : ", out);
         myscanf("%c", &mode); // mode選択
         if (mode == 'q')      // qを選択した場合
             break;            // whileループを抜ける
 
         if (mode == '0') // '0'を選択した場合
         {
-            myprintf("Do you want to reset output? (y or n)\n");
+            myprintf("Do you want to reset calculation result? (y or N)\n");
             myscanf("%c", &flag); // フラグ選択
             if (flag == 'y')      // yを選択した場合
             {
-                myprintf("Reset output.\n\n");
+                myprintf("Reset calculation result.\n\n");
                 out = 0; // 計算結果を0にリセット
             }
             else
-                myprintf("Operation cancelled.\n");
+                myprintf("Operation cancelled.\n\n");
 
             continue;
         }
@@ -171,6 +171,8 @@ int main() // 整数専用の電卓
                 myprintf("Cannot use history func before calculating once.\n\n");
                 continue;
             }
+
+            myprintf("Do you want to calc %c%d again? (y or N)\n", his_operand, his_num);
             myscanf("%c", &flag); // フラグ選択
             if (flag == 'y')      // yを選択した場合
             {
@@ -181,7 +183,7 @@ int main() // 整数専用の電卓
             }
             else
             {
-                myprintf("Operation cancelled.\n");
+                myprintf("Operation cancelled.\n\n");
                 continue;
             }
         }
@@ -192,7 +194,7 @@ int main() // 整数専用の電卓
             continue;
         }
 
-        if (checkflag == 0)
+        if (checkflag <= 0)
         {
             myprintf("Please input the number.(int type ONLY)\nNumber? : ");
             myscanf("%d", &in); // 整数の入力値受付
