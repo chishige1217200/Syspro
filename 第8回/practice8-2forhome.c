@@ -33,7 +33,7 @@ void print_small_str(char *s)
 		if (c >= 65 && c <= 90)
 			c += 32;
 		print_char(c);
-	}	
+	}
 }
 
 void myprintf(char *fmt, ...)
