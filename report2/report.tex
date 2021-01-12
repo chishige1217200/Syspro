@@ -45,15 +45,15 @@
 
 %--------------------------------------------------------------------%
 \section{概要} \label{sec:abstract}
-本レポートでは，MIPS言語を用いて，提示された5つの課題に取り組み，その解答を報告する．実行結果はxspimによる結果である．
+本レポートでは，MIPS言語とC言語を用いて，提示された5つの課題に取り組み，その解答を報告する．実行結果はxspim及びgccにより生成された$32$\verb|bit|バイナリによる結果である．
 
-本レポートで報告するシステムプログラミング1の課題は次の5つである．
+本レポートで報告するシステムプログラミング2の課題は次の5つである．
 \begin{enumerate}
-\item A.8節 「入力と出力」に示されている方法と， A.9節 最後「システムコール」に示されている方法のそれぞれで \verb|"Hello World"| を表示せよ．両者の方式を比較し考察せよ．\cite{book:assembly}
-\item アセンブリ言語中で使用する \verb|.data|， \verb|.text| および \verb|.align| とは何か解説せよ． \ref{sec:p1-2}節のコード中の 9行目の \verb|.data| がない場合，どうなるかについて考察せよ．
-\item A.6節 「手続き呼出し規約」に従って，再帰関数 \verb|fact| を実装せよ． (以降の課題においては，この規約に全て従うこと)\cite{book:assembly}
-\item 素数を最初から100番目まで求めて表示するMIPSのアセンブリ言語プログラムを作成してテストせよ． その際，素数を求めるためにに表\ref{tab:routine}に示す2つのルーチンを作成すること．
-\item 素数を最初から100番目まで求めて表示するMIPSのアセンブリ言語プログラムを作成してテストせよ． ただし，配列に実行結果を保存するように \verb|main| 部分を改造し， ユーザの入力によって任意の番目の配列要素を表示可能にせよ．
+\item SPIMが提供するシステムコールをC言語から実行できるようにしたい．A.6節「手続き呼出し規約」に従って，各種手続きをアセンブラで記述せよ．ファイル名は，\verb|syscalls.s|とすること．\cite{book:assembly}また，記述した\verb|syscalls.s|の関数をC言語から呼び出すことで，ハノイの塔(\verb|hanoi.c|とする)を完成させよ．
+\item \verb|hanoi.s|を例に\verb|spim-gcc|の引数保存に関するスタックの利用方法について，説明せよ．そのことは，規約上許されるスタックフレームの最小値$24$とどう関係しているか．このスタックフレームの最小値規約を守らないとどのような問題が生じるかについて解説せよ．
+\item プログラム\verb|report2-1.c|をコンパイルした結果をもとに，\verb|auto|変数と\verb|static|変数の違い，ポインタと配列の違いについてレポートせよ．
+\item \verb|printf|など，一部の関数は，任意の数の引数を取ることができる．これらの関数を可変引数関数と呼ぶ．MIPSのCコンパイラにおいて可変引数関数の実現方法について考察し，解説せよ．
+\item \verb|printf|のサブセットを実装し，SPIM上でその動作を確認する応用プログラム(自由なデモプログラム)を作成せよ．フルセットにどれだけ近いか，あるいは，よく使う重要な仕様だけをうまく切り出して，実用的なサブセットを実装しているかについて評価する．ただし，浮動小数は対応しなくてもよい(SPIM自体がうまく対応していない)．加えて，この\verb|printf|を利用した応用プログラムの出来も評価の対象とする．
 \end{enumerate}
 
 
@@ -62,33 +62,35 @@
 使用したMIPSアセンブリ言語のソースコードは，\ref{sec:makep}章に示す．
 
 \subsection{課題2-1}
+まず，\ref{sec:syscall}節に示す\verb|syscalls.s|について説明する．
 
+処理でスタックを確保する必要があるため，\verb|.text|によりテキストセグメントにプログラムを配置する．続いて\verb|.align 2|により次の命令が配置されるメモリ上のアドレスを4バイト境界に整列する．4行目の\verb|_print_int|ラベルから始まる一連の処理は，C言語のソースコードから\verb|print_int()|で呼び出せる処理に相当する．まず\verb|subu|命令でスタックを24バイト確保し，\verb|sw|命令で\verb|$ra|レジスタの値を\verb|$sp + 20|のメモリ上のアドレスに退避する．\verb|li|命令で\verb|$v0|レジスタに1を代入し，システム・コール・コード1である\verb|print_int|を指定する．\verb|syscall|により，システム・コールを行う．その後，\verb|lw|命令で\verb|$ra|レジスタの値をスタックから復元し，\verb|addu|命令でスタックを開放する，\verb|j $ra|により呼び出し元に処理を戻す．
 
-\subsection{課題2-2}
+他の\verb|print_string|，\verb|read_int|，\verb|read_string|においては，システム・コール・コードがそれぞれ$4$，$5$，$8$となっていること以外は共通の処理を行っているため，ここでは触れない．
 
-
-\subsection{課題2-3}
-
-
-\subsection{課題2-4}
 
 
 \subsection{課題2-5}
+続いて，\ref{sec:p2-5}節に示すデモプログラムについて説明する．
 
 
 
 %--------------------------------------------------------------------%
 \section{プログラムの使用法と実行結果}\label{sec:howresult}
 
-プログラムは，CentOS 7.6.1810 (Core) のxspimで動作を確認している．まず，ターミナルに\verb|xspim -mapped_io&|と打ち込んで，xspimを実行する．
-実行後にloadの機能を使い，拡張子が\verb|.s|のアセンブリファイルを読み込む．runの機能で読み込んだプログラムを走らせる．プログラムを走らせた後，もう一度プログラムを走らせる場合には\verb|clear|でメモリとレジスタの値を初期化した後，再度ロードする必要がある．
+プログラムは，CentOS 7.6.1810 (Core) のxspimで動作を確認している．まず，ターミナルに\verb|xspim &|と打ち込んで，xspimを実行する．
+実行後にloadの機能を使い，拡張子が\verb|.s|のアセンブリファイルを読み込む．runの機能で読み込んだプログラムを走らせる．プログラムを走らせた後，もう一度プログラムを走らせる場合には\verb|clear|でメモリとレジスタの値を初期化した後，再度ロードする必要がある．\verb|syscalls.s|を用いるプログラムの場合は，最後にこれを読み込ませる．
 
 
 
 %--------------------------------------------------------------------%
 \section{考察} \label{sec:review}
 
-\subsection{課題2-1}
+\subsection{課題2-2}
+
+\subsection{課題2-3}
+
+\subsection{課題2-4}
 
 
 %--------------------------------------------------------------------%
@@ -110,38 +112,296 @@
 %   - fontsize          フォントサイズ指定
 %   - baselinestretch   行間の大きさを比率で指定．デフォルトは 1.0．
 
-
-\subsection{課題2-1で用いたコード} \label{sec:p2-1}
-下記は，「入力と出力」に示されている方法で実装した例．
-\begin{Verbatim}[numbers=left, xleftmargin=10mm, numbersep=6pt,
-                    fontsize=\small, baselinestretch=0.8]
- 
+\subsection{課題2-1で用いたコード} \label{sec:syscall}
+\begin{Verbatim}[fontsize=\small, baselinestretch=0.8]
+     1      .text
+     2      .align 2
+     3
+     4  _print_int:
+     5      subu    $sp,    $sp,    24  # スタックの積立
+     6      sw      $ra,    20($sp)     # $raレジスタの値をスタックに退避
+     7
+     8      li      $v0,    1           # syscall用にprint_intを指定
+     9      syscall                     # システムコールの実行
+    10
+    11      lw      $ra,    20($sp)     # $raレジスタの値の復元
+    12      addu    $sp,    $sp,    24  # スタックを解放
+    13      j       $ra                 # 呼び出し元に戻る
+    14
+    15  _print_string:
+    16      subu    $sp,    $sp,    24  # スタックの積立
+    17      sw      $ra,    20($sp)     # $raレジスタの値をスタックに退避
+    18
+    19      li      $v0,    4           # syscall用にprint_stringを指定
+    20      syscall                     # システムコールの実行
+    21
+    22      lw      $ra,    20($sp)     # $raレジスタの値の復元
+    23      addu    $sp,    $sp,    24  # スタックを解放
+    24      j       $ra                 # 呼び出し元に戻る
+    25
+    26  _read_int:
+    27      subu    $sp,    $sp,    24  # スタックの積立
+    28      sw      $ra,    20($sp)     # $raレジスタの値をスタックに退避
+    29
+    30      li      $v0,    5           # syscall用にread_intを指定
+    31      syscall                     # システムコールの実行
+    32
+    33      lw      $ra,    20($sp)     # $raレジスタの値の復元
+    34      addu    $sp,    $sp,    24  # スタックを解放
+    35      j       $ra                 # 呼び出し元に戻る
+    36
+    37  _read_string:
+    38      subu    $sp,    $sp,    24  # スタックの積立
+    39      sw      $ra,    20($sp)     # $raレジスタの値をスタックに退避
+    40
+    41      li      $v0,    8           # syscall用にread_stringを指定
+    42      syscall                     # システムコールの実行
+    43
+    44      lw      $ra,    20($sp)     # $raレジスタの値の復元
+    45      addu    $sp,    $sp,    24  # スタックを解放
+    46      j       $ra                 # 呼び出し元に戻る
 \end{Verbatim}
-
-\subsection{課題2-2で用いたコード} \label{sec:p2-2}
-\begin{Verbatim}[numbers=left, xleftmargin=10mm, numbersep=6pt,
-                    fontsize=\small, baselinestretch=0.8]
-
-\end{Verbatim}
-
-
-\subsection{課題2-3で用いたコード} \label{sec:p2-3}
-\begin{Verbatim}[numbers=left, xleftmargin=10mm, numbersep=6pt,
-                    fontsize=\small, baselinestretch=0.8]
-
-\end{Verbatim}
-
-\subsection{課題2-4で用いたコード} \label{sec:p2-4}
-\begin{Verbatim}[numbers=left, xleftmargin=10mm, numbersep=6pt,
-                    fontsize=\small, baselinestretch=0.8]
-
-\end{Verbatim}
-
 
 \subsection{課題2-5で用いたコード} \label{sec:p2-5}
-\begin{Verbatim}[numbers=left, xleftmargin=10mm, numbersep=6pt,
-                    fontsize=\small, baselinestretch=0.8]
-
+xspimで実行する場合は，1行目の\verb|#include "spim.h"|は不要である．
+\begin{Verbatim}[fontsize=\small, baselinestretch=0.8]
+     1	#include "spim.h"
+     2	
+     3	void print_char(char c)
+     4	{
+     5	    char s[2]; // バッファ(2文字目は終端文字)
+     6	
+     7	    s[0] = c;    // 1文字目代入
+     8	    s[1] = '\0'; // 終端文字代入
+     9	
+    10	    print_string(s); // 文字列表示
+    11	}
+    12	
+    13	void print_big_str(char *s)
+    14	{
+    15	    int i = 0; // オフセット指定用
+    16	    char c;    // 1文字バッファ
+    17	
+    18	    for (i = 0; *(s + i * sizeof(char)) != '\0'; i++)
+    19	    {
+    20	        c = *(s + i * sizeof(char)); // 次の文字情報をcに代入
+    21	        if (c >= 97 && c <= 122)     // 小文字なら大文字へ
+    22	            c -= 32;
+    23	        print_char(c); // 1文字表示
+    24	    }
+    25	}
+    26	
+    27	void print_small_str(char *s)
+    28	{
+    29	    int i = 0; // オフセット指定用
+    30	    char c;    // 1文字バッファ
+    31	
+    32	    for (i = 0; *(s + i * sizeof(char)) != '\0'; i++)
+    33	    {
+    34	        c = *(s + i * sizeof(char)); // 次の文字情報をcに代入
+    35	        if (c >= 65 && c <= 90)      // 大文字なら小文字へ
+    36	            c += 32;
+    37	        print_char(c); // 1文字表示
+    38	    }
+    39	}
+    40	
+    41	char read_char() // 1文字入力関数
+    42	{
+    43	    char buf[1025]; // 入力文字数は最大1024文字
+    44	    char c;         // 最初の1文字を格納
+    45	
+    46	    read_string(buf, 1025); // 入力受付
+    47	    c = buf[0];             // 最初の1文字をcに代入
+    48	    return c;
+    49	}
+    50	
+    51	void myprintf(char *fmt, ...)
+    52	{
+    53	    int i;        // 引数から受け取ったint値を代入
+    54	    int argc = 0; // 何番目の引数か
+    55	    char c;       // 引数から受け取ったASCIIコードを代入
+    56	    char *s;      // 引数となる文字列の先頭アドレスを格納
+    57	
+    58	    while (*fmt)
+    59	    {
+    60	        if (*fmt == '%')
+    61	        {
+    62	            fmt++;  // 検索対象文字列を1文字右へ
+    63	            argc++; // 引数のカウント数を1増やす
+    64	            switch (*fmt)
+    65	            {
+    66	            case 'd': // 数値の表示
+    67	                i = *((int *)((char *)&fmt + argc * sizeof(void *)));
+    68	                print_int(i); // 数値表示
+    69	                break;
+    70	            case 's': // 文字列の表示
+    71	                s = *((char **)((char *)&fmt + argc * sizeof(void *)));
+    72	                print_string(s); // 文字列表示
+    73	                break;
+    74	            case 'c': // 1文字表示
+    75	                c = *((char *)((char *)&fmt + argc * sizeof(void *)));
+    76	                print_char(c); // 1文字表示
+    77	                break;
+    78	            case 'b': // すべて小文字で表示 *sはchar *
+    79	                s = *((char **)((char *)&fmt + argc * sizeof(void *)));
+    80	                print_small_str(s);
+    81	                break;
+    82	            case 'B': // すべて大文字で表示 *sはchar *
+    83	                s = *((char **)((char *)&fmt + argc * sizeof(void *)));
+    84	                print_big_str(s);
+    85	                break;
+    86	            }
+    87	        }
+    88	        else
+    89	        {
+    90	            print_char(*fmt); // 1文字表示
+    91	        }
+    92	        fmt++; // 検索対象文字列を1文字右へ
+    93	    }
+    94	}
+    95	
+    96	void myscanf(char *fmt, ...) //引数は1個まで
+    97	{
+    98	    int *i;  // 引数となる変数のアドレスを格納
+    99	    char *c; // 引数となる変数のアドレスを格納
+   100	    char *s; // 引数となる変数のアドレスを格納
+   101	
+   102	    while (*fmt)
+   103	    {
+   104	        if (*fmt == '%')
+   105	        {
+   106	            fmt++; // 検索対象文字列を1文字右へ
+   107	            switch (*fmt)
+   108	            {
+   109	            case 'd':                                           // 数
+値の入力
+   110	                i = *((int **)((char *)&fmt + sizeof(void *))); // 代
+入先情報
+   111	                *i = read_int();
+   112	                break;
+   113	            case 's':                                            // 文
+字列の入力
+   114	                s = *((char **)((char *)&fmt + sizeof(void *))); // 代
+入先情報
+   115	                read_string(s, 1025);
+   116	                break;
+   117	            case 'c':                                            // 1文
+字入力
+   118	                c = *((char **)((char *)&fmt + sizeof(void *))); // 代
+入先情報
+   119	                *c = read_char();
+   120	                break;
+   121	            }
+   122	        }
+   123	        fmt++; // 検索対象文字列を1文字右へ
+   124	    }
+   125	}
+   126	
+   127	int main() // 整数専用の電卓
+   128	{
+   129	    int out = 0;        // 計算結果
+   130	    int in;             // 計算用の入力数値
+   131	    char mode = 'f';    // mode選択用
+   132	    char flag;          // y or n フラグ用
+   133	    int checkflag = -1; // inの入力の是非(-1:初回時のみ)
+   134	    char his_operand;   // 履歴を1回分保存
+   135	    int his_num = 0;    // 履歴を1回分保存
+   136	
+   137	    myprintf("Starting %b...\n", "CALCULATOR");
+   138	
+   139	    while (1)
+   140	    {
+   141	        myprintf("Please select the calc mode. (\"+\" or \"-\" or \"*\" 
+or \"/\" or \"0\" or \"c\" or \"h\" or \"q\")\nMode? : ", out);
+   142	        myscanf("%c", &mode); // mode選択
+   143	        if (mode == 'q')      // qを選択した場合
+   144	            break;            // whileループを抜ける
+   145	
+   146	        if (mode == '0') // '0'を選択した場合
+   147	        {
+   148	            myprintf("Do you want to reset calculation result? (y or N)\
+n");
+   149	            myscanf("%c", &flag); // フラグ選択
+   150	            if (flag == 'y')      // yを選択した場合
+   151	            {
+   152	                myprintf("Reset calculation result.\n\n");
+   153	                out = 0; // 計算結果を0にリセット
+   154	            }
+   155	            else
+   156	                myprintf("Operation cancelled.\n\n");
+   157	
+   158	            continue;
+   159	        }
+   160	
+   161	        if (mode == 'c') // cを選択した場合
+   162	        {
+   163	            myprintf("Result : %d\n\n", out); // 確認用に結果を出力
+   164	            continue;                         // ループ先頭に戻る
+   165	        }
+   166	
+   167	        if (mode == 'h') // hを選択した場合
+   168	        {
+   169	            if (checkflag == -1)
+   170	            {
+   171	                myprintf("Cannot use history func before calculating onc
+e.\n\n");
+   172	                continue;
+   173	            }
+   174	
+   175	            myprintf("Do you want to calc %c%d again? (y or N)\n", his_o
+perand, his_num);
+   176	            myscanf("%c", &flag); // フラグ選択
+   177	            if (flag == 'y')      // yを選択した場合
+   178	            {
+   179	                myprintf("Calculated %c%d again.\n", his_operand, his_nu
+m);
+   180	                mode = his_operand;
+   181	                in = his_num;
+   182	                checkflag = 1; // inに値を代入したため
+   183	            }
+   184	            else
+   185	            {
+   186	                myprintf("Operation cancelled.\n\n");
+   187	                continue;
+   188	            }
+   189	        }
+   190	
+   191	        if (mode != '+' && mode != '-' && mode != '*' && mode != '/') //
+ モードを正しく選択しなかった場合
+   192	        {
+   193	            myprintf("Please select the correct mode.\n\n");
+   194	            continue;
+   195	        }
+   196	
+   197	        if (checkflag <= 0)
+   198	        {
+   199	            myprintf("Please input the number.(int type ONLY)\nNumber? :
+ ");
+   200	            myscanf("%d", &in); // 整数の入力値受付
+   201	        }
+   202	
+   203	        his_operand = mode; // historyに入力モードを登録
+   204	        his_num = in;       // historyに入力数値を登録
+   205	
+   206	        if (mode == '+') // 加算モード
+   207	            out = out + in;
+   208	        if (mode == '-') // 減算モード
+   209	            out = out - in;
+   210	        if (mode == '*') // 乗算モード
+   211	            out = out * in;
+   212	        if (mode == '/') // 除算モード
+   213	            if (in != 0) // 0除算は禁止
+   214	                out = out / in;
+   215	            else
+   216	                myprintf("Cannot divide by zero.\nOperarion denied.\n");
+   217	
+   218	        myprintf("Result : %d\n\n", out); // 演算後に結果出力
+   219	        checkflag = 0;                    // inは未入力
+   220	    }
+   221	    myprintf("%B : %d", "final result", out); // 最終結果出力
+   222	    myprintf("\nQuit.\n");
+   223	    return 0;
+   224	}
 \end{Verbatim}
 
 %--------------------------------------------------------------------%

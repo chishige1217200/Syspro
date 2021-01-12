@@ -1,7 +1,6 @@
     .text
     .align 2
 
-# void print(int i)
 _print_int:
     subu    $sp,    $sp,    24  # スタックの積立
     sw      $ra,    20($sp)     # $raレジスタの値をスタックに退避
