@@ -72,17 +72,60 @@
 
 \subsection{課題2-5}
 続いて，\ref{sec:p2-5}節に示すデモプログラムについて説明する．
-まずプログラムの動作を支える\verb|myprintf()|関数，\verb|myscanf()|関数とその付属関数について説明する．
+まずプログラムの動作を支える\verb|void myprintf(char *fmt, ...)|関数，\verb|void myscanf(char *fmt, ...)|関数とその付属関数について説明する．
 
-\verb|print_char()|関数は，1文字を表示する関数で，MIPS言語のシステム・コールでは\verb|print_string()|を利用するため，任意の1文字と終端文字をつなぎ合わせた長さ2の配列を作り，その先頭アドレスを\verb|print_string|に渡す処理を行う．
+\verb|void print_char(char c)|関数は，1文字を表示する関数で，MIPS言語のシステム・コールでは\verb|print_string(char *)|の形を利用するため，任意の1文字と終端文字をつなぎ合わせた長さ2の配列を作り，その先頭アドレスを\verb|print_string(char *)|に渡す処理を行う．
 
-\verb|print_big_str()|関数は，文字列に小文字の英字が含まれる場合，それをすべて大文字にして出力する関数である．引数は\verb|char *|型であり，これにオフセットを加えながら，バッファに1文字分の情報を読み出す．その後ASCIIコードが$97$以上$122$以下の場合は，この値を$-32$して，\verb|print_char()|関数を呼び出す．\verb|print_small_str()|関数は，文字列に大文字の英字が含まれる場合，それをすべて小文字にして出力する関数である．ASCIIコードが$65$以上$90$以下の場合は，この値を$+32$して，\verb|print_char()|関数を呼び出す．いずれの関数も戻り値はない．
+\verb|void print_big_str(char *s)|関数は，文字列に小文字の英字が含まれる場合，それをすべて大文字にして出力する関数である．引数は\verb|char *|型であり，これにオフセットを加えながら，バッファに1文字分の情報を読み出す．その後ASCIIコードが$97$以上$122$以下の場合は，この値を$-32$して，\verb|print_char(char c)|関数を呼び出す．\verb|void print_small_str(char *s)|関数は，文字列に大文字の英字が含まれる場合，それをすべて小文字にして出力する関数である．ASCIIコードが$65$以上$90$以下の場合は，この値を$+32$して，\verb|print_char(char c)|関数を呼び出す．いずれの関数も戻り値はない．
 
-\verb|read_char()|関数は，1文字入力を受ける関数である．オーバーフロー防止の為，$1024$文字分のバッファを設ける．\verb|read_string()|によりシステム・コールを実行する．その後，\verb|c|に\verb|buf[0]|の値を代入し，戻り値とする．
+\verb|char read_char(void)|関数は，1文字入力を受ける関数である．オーバーフロー防止の為，$1024$文字分のバッファを設ける．\verb|read_string(char *, int)|によりシステム・コールを実行する．その後，\verb|c|に\verb|buf[0]|の値を代入し，戻り値とする．
 
-\verb|myprinｔf()|関数は，
+\verb|myprintf()|関数は，正規の\verb|printf()|の呼び出し時に指定するサブセットに対応する分岐の処理を行う．\verb|char *|型の変数\verb|fmt|で第一引数に対応する文字列の情報を読み取り，その情報の\verb|%|
+をもとに変数\verb|i|，\verb|c|，\verb|s|に対応する第二引数以降の情報を代入し，\verb|print_int(int)|，\verb|print_string(char *)|関数などを呼び出す．\verb|%|
+とその1文字後のサブセットを指定する英字1文字以外は，\verb|else|文後の\verb|print_char(char c)|関数により，そのまま1文字として出力される．\verb|int|型の変数\verb|argc|が引数の数をカウントし，第一引数が格納されているメモリのアドレスである\verb|&fmt|に，\verb|sizeof(void)|すなわち$4$バイト $*$ \verb|argc|を加えることにより，第二引数以降が格納されているメモリのアドレスを知ることができる．
+なお，\verb|myprintf()|関数で使用可能なサブセットは表\ref{tab:printsubsets}に示す．
 
-デモ内容は，\verb|int|値のみ対応した簡易的な電卓プログラムとなっている．電卓機能はすべて\verb|main()|関数に記述されている．使用可能なコマンドは表\ref{tab:commands}に示す．
+デモ内容は，\verb|int|値のみ対応した簡易的な電卓プログラムとなっている．電卓機能はすべて\verb|int main(void)|関数に記述されている．使用可能なコマンドは表\ref{tab:commands}に示す．
+
+\begin{table}[b]
+\centering
+	\caption{\texttt{myprintf()}関数のサブセット}
+	\label{tab:printsubsets}
+    	\begin{tabular}{|l|l|}
+	\hline
+サブセット指定&概要\\
+	\hline
+\verb|%d|&\verb|int|値出力\\
+	\hline
+\verb|%c|&1文字出力\\
+	\hline
+\verb|%s|&文字列出力\\
+	\hline
+\verb|%B|&文字列中の英小文字は大文字にして出力\\
+	\hline
+\verb|%b|&文字列中の英大文字は小文字にして出力\\
+	\hline
+
+	\end{tabular}
+\end{table}
+
+\begin{table}[h]
+\centering
+	\caption{\texttt{myscanf()}関数のサブセット}
+	\label{tab:scansubsets}
+    	\begin{tabular}{|l|l|}
+	\hline
+サブセット指定&概要\\
+	\hline
+\verb|%d|&\verb|int|値入力\\
+	\hline
+\verb|%c|&1文字入力\\
+	\hline
+\verb|%s|&文字列入力\\
+	\hline
+
+	\end{tabular}
+\end{table}
 
 \begin{table}[b]
 \centering
@@ -150,7 +193,7 @@
 %   - fontsize          フォントサイズ指定
 %   - baselinestretch   行間の大きさを比率で指定．デフォルトは 1.0．
 
-\subsection{課題2-1で用いたコード} \label{sec:syscall}
+\subsection{\texttt{syscalls.s}} \label{sec:syscall}
 \begin{Verbatim}[fontsize=\small, baselinestretch=0.8]
      1      .text
      2      .align 2
@@ -198,6 +241,294 @@
     44      lw      $ra,    20($sp)     # $raレジスタの値の復元
     45      addu    $sp,    $sp,    24  # スタックを解放
     46      j       $ra                 # 呼び出し元に戻る
+\end{Verbatim}
+
+\subsection{\texttt{hanoi.c}} \label{sec:hanoi.c}
+xspimで実行する場合は，1行目の\verb|#include "spim.h"|は不要である．
+\begin{Verbatim}[fontsize=\small, baselinestretch=0.8]
+     1  // #include "spim.h"
+     2
+     3  void hanoi(int n, int start, int finish, int extra)
+     4  {
+     5    if (n != 0){
+     6      hanoi(n - 1, start, extra, finish);
+     7      print_string("Move disk ");
+     8      print_int(n);
+     9      print_string(" from peg ");
+    10      print_int(start);
+    11      print_string(" to peg ");
+    12      print_int(finish);
+    13      print_string(".\n");
+    14      hanoi(n - 1, extra, finish, start);
+    15    }
+    16  }
+    17
+    18  main()
+    19  {
+    20    int n;
+    21    print_string("Enter number of disks> ");
+    22    n = read_int();
+    23    hanoi(n, 1, 2, 3);
+    24  }
+\end{Verbatim}
+
+\subsection{\texttt{hanoi.s}} \label{sec:hanoi.s}
+\verb|spim-gcc|により生成されたアセンブリコードである．
+\begin{Verbatim}[fontsize=\small, baselinestretch=0.8]
+     1          .file   1 "hanoi.c"
+     2
+     3   # -G value = 0, Arch = r2000, ISA = 1
+     4   # GNU C version 2.96 20000731 (Red Hat Linux 7.3 2.96-113.2)
+nux) compiled by GNU C version 2.96 20000731 (Red Hat Linux 7.3 2.96-
+     5   # options passed:  -mno-abicalls -mrnames -mmips-as
+     6   # -mno-check-zero-division -march=r2000 -O0 -fleading-unders
+     7   # -finhibit-size-directive -fverbose-asm
+     8   # options enabled:  -fpeephole -ffunction-cse -fkeep-static-
+     9   # -fpcc-struct-return -fsched-interblock -fsched-spec -fbran
+g
+    10   # -fnew-exceptions -fcommon -finhibit-size-directive -fverbo
+    11   # -fgnu-linker -fargument-alias -fleading-underscore -fident
+no
+    12   # -mrnames -mno-check-zero-division -march=r2000
+    13
+    14
+    15          .rdata
+    16          .align  2
+    17  $LC0:
+    18          .asciiz "Move disk "
+    19          .align  2
+    20  $LC1:
+    21          .asciiz " from peg "
+    22          .align  2
+    23  $LC2:
+    24          .asciiz " to peg "
+    25          .align  2
+    26  $LC3:
+    27          .asciiz ".\n"
+    28          .text
+    29          .align  2
+    30  _hanoi:
+    31          subu    $sp,$sp,24
+    32          sw      $ra,20($sp)
+    33          sw      $fp,16($sp)
+    34          move    $fp,$sp
+    35          sw      $a0,24($fp)
+    36          sw      $a1,28($fp)
+    37          sw      $a2,32($fp)
+    38          sw      $a3,36($fp)
+    39          lw      $v0,24($fp)
+    40          beq     $v0,$zero,$L3
+    41          lw      $v0,24($fp)
+    42          addu    $v0,$v0,-1
+    43          move    $a0,$v0
+    44          lw      $a1,28($fp)
+    45          lw      $a2,36($fp)
+    46          lw      $a3,32($fp)
+    47          jal     _hanoi
+    48          la      $a0,$LC0
+    49          jal     _print_string
+    50          lw      $a0,24($fp)
+    51          jal     _print_int
+    52          la      $a0,$LC1
+    53          jal     _print_string
+    54          lw      $a0,28($fp)
+    55          jal     _print_int
+    56          la      $a0,$LC2
+    57          jal     _print_string
+    58          lw      $a0,32($fp)
+    59          jal     _print_int
+    60          la      $a0,$LC3
+    61          jal     _print_string
+    62          lw      $v0,24($fp)
+    63          addu    $v0,$v0,-1
+    64          move    $a0,$v0
+    65          lw      $a1,36($fp)
+    66          lw      $a2,32($fp)
+    67          lw      $a3,28($fp)
+    68          jal     _hanoi
+    69  $L3:
+    70          move    $sp,$fp
+    71          lw      $ra,20($sp)
+    72          lw      $fp,16($sp)
+    73          addu    $sp,$sp,24
+    74          j       $ra
+    75          .rdata
+    76          .align  2
+    77  $LC4:
+    78          .asciiz "Enter number of disks> "
+    79          .text
+    80          .align  2
+    81  main:
+    82          subu    $sp,$sp,32
+    83          sw      $ra,28($sp)
+    84          sw      $fp,24($sp)
+    85          move    $fp,$sp
+    86          la      $a0,$LC4
+    87          jal     _print_string
+    88          jal     _read_int
+    89          sw      $v0,16($fp)
+    90          lw      $a0,16($fp)
+    91          li      $a1,1                   # 0x1
+    92          li      $a2,2                   # 0x2
+    93          li      $a3,3                   # 0x3
+    94          jal     _hanoi
+    95          move    $sp,$fp
+    96          lw      $ra,28($sp)
+    97          lw      $fp,24($sp)
+    98          addu    $sp,$sp,32
+    99          j       $ra
+\end{Verbatim}
+
+\subsection{\texttt{report2-1.c}} \label{sec:report2-1.c}
+\begin{Verbatim}[fontsize=\small, baselinestretch=0.8]
+     1	int primes_stat[10];
+     2	
+     3	char * string_ptr   = "ABCDEFG";
+     4	char   string_ary[] = "ABCDEFG";
+     5	
+     6	void print_var(char *name, int val)
+     7	{
+     8	  print_string(name);
+     9	  print_string(" = ");
+    10	  print_int(val);
+    11	  print_string("\n");
+    12	}
+    13	
+    14	main()
+    15	{
+    16	  int primes_auto[10];
+    17	
+    18	  primes_stat[0] = 2;
+    19	  primes_auto[0] = 3;
+    20	
+    21	  print_var("primes_stat[0]", primes_stat[0]);
+    22	  print_var("primes_auto[0]", primes_auto[0]);
+    23	}
+\end{Verbatim}
+
+\subsection{\texttt{report2-1.s}} \label{sec:report2-1.s}
+\begin{Verbatim}[fontsize=\small, baselinestretch=0.8]
+     1		.file	1 "report2-1.c"
+     2	
+     3	 # -G value = 0, Arch = r2000, ISA = 1
+     4	 # GNU C version 2.96 20000731 (Red Hat Linux 7.3 2.96-113.2) (mipsel-li
+nux) compiled by GNU C version 2.96 20000731 (Red Hat Linux 7.3 2.96-113.2).
+     5	 # options passed:  -mno-abicalls -mrnames -mmips-as
+     6	 # -mno-check-zero-division -march=r2000 -O0 -fleading-underscore
+     7	 # -finhibit-size-directive -fverbose-asm
+     8	 # options enabled:  -fpeephole -ffunction-cse -fkeep-static-consts
+     9	 # -fpcc-struct-return -fsched-interblock -fsched-spec -fbranch-count-re
+g
+    10	 # -fnew-exceptions -fcommon -finhibit-size-directive -fverbose-asm
+    11	 # -fgnu-linker -fargument-alias -fleading-underscore -fident -fmath-err
+no
+    12	 # -mrnames -mno-check-zero-division -march=r2000
+    13	
+    14	
+    15		.rdata				# 読み取り専用データセ
+グメント
+    16		.align	2			# バイト揃え
+    17	$LC0:
+    18		.asciiz	"ABCDEFG"	# 文字列情報
+    19		.data				# データセグメント
+    20		.align	2			# バイト揃え
+    21	_string_ptr:			# ポインタ
+    22		.word	$LC0		# アドレスを参照
+    23		.align	2			# バイト揃え
+    24	_string_ary:			# 配列
+    25		.asciiz	"ABCDEFG"	# 文字列情報
+    26		.rdata				# 読み取り専用データセ
+グメント
+    27		.align	2			# バイト揃え
+    28	$LC1:
+    29		.asciiz	" = "		# 文字列情報
+    30		.align	2			# バイト揃え
+    31	$LC2:
+    32		.asciiz	"\n"		# 文字列情報
+    33		.text				# テキストセグメント
+    34		.align	2			# バイト揃え
+    35	_print_var:
+    36		subu	$sp,$sp,24	# スタックの積立（24バイト）
+    37		sw	$ra,20($sp)		# $sp + 20番地のアドレスに
+$raの値をバックアップ
+    38		sw	$fp,16($sp)		# $sp + 16番地のアドレスに
+$fpの値をバックアップ
+    39		move	$fp,$sp		# $spの値で$fpを上書き
+    40		sw	$a0,24($fp)		# $fp($sp) + 24番地のアドレ
+スに$a0の値をバックアップ（境界跨ぎ）
+    41		sw	$a1,28($fp)		# $fp($sp) + 28番地のアドレ
+スに$a1の値をバックアップ（境界跨ぎ）
+    42		lw	$a0,24($fp)		# 元$a0の値のバックアッ
+プをスタックからロード（同時にprint_stringの引数に）
+    43		jal	_print_string	# print_stringの呼び出し
+    44		la	$a0,$LC1		# "="を指すアドレスを$a0
+にロード
+    45		jal	_print_string	# print_stringの呼び出し
+    46		lw	$a0,28($fp)		# 元$a1の値のバックアッ
+プをスタックからロード（同時にprint_stringの引数に）
+    47		jal	_print_int		# print_intの呼び出し
+    48		la	$a0,$LC2		# "\n"を指すアドレスを$a
+0にロード
+    49		jal	_print_string	# print_stringの呼び出し
+    50		move	$sp,$fp		# $fpの値で$spを上書き
+    51		lw	$ra,20($sp)		# $sp + 20番地のアドレスか
+ら$raの値を復元
+    52		lw	$fp,16($sp)		# $sp + 16番地のアドレスか
+ら$fpの値を復元
+    53		addu	$sp,$sp,24	# スタックの解放
+    54		j	$ra				# 呼び出し元に戻る
+    55		.rdata				# 読み取り専用テキスト
+セグメント
+    56		.align	2			# バイト揃え
+    57	$LC3:
+    58		.asciiz	"primes_stat[0]"	# 文字列情報
+    59		.align	2					# バイト揃え
+    60	$LC4:
+    61		.asciiz	"primes_auto[0]"	# 文字列情報
+    62		.text						# テキストセ
+グメント
+    63		.align	2					# バイト揃え
+    64	main:
+    65		subu	$sp,$sp,64			# スタックの積立て
+（64バイト）
+    66		sw	$ra,60($sp)				# $sp + 60番地
+のアドレスに$raの値をバックアップ
+    67		sw	$fp,56($sp)				# $sp + 56番地
+のアドレスに$fpの値をバックアップ
+    68		move	$fp,$sp				# $spの値で$fpを上書
+き
+    69		li	$v0,2					# 0x2
+    70		sw	$v0,_primes_stat		# _primes_statに対応す
+るラベルのメモリ上のアドレスに$v0の値を保存
+    71		li	$v0,3					# 0x3
+    72		sw	$v0,16($fp)				# $fp($sp) + 16番
+地のアドレスに$v0の値をバックアップ
+    73		la	$a0,$LC3				# "primes_stat[0
+]"を指すアドレスを$a0にロード
+    74		lw	$a1,_primes_stat		# _primes_statに対応す
+るラベルのメモリ上のアドレスの値を$a1にロード
+    75		jal	_print_var				# print_varの呼
+び出し
+    76		la	$a0,$LC4				# "primes_auto[0
+]"を指すアドレスを$a0にロード
+    77		lw	$a1,16($fp)				# 元$v0の値の
+バックアップをスタックから$a1にロード（同時にprint_stringの
+引数に）
+    78		jal	_print_var				# print_varの呼
+び出し
+    79		move	$sp,$fp				# $fpの値で$spを上書
+き
+    80		lw	$ra,60($sp)				# $sp + 60番地
+のアドレスから$raの値を復元
+    81		lw	$fp,56($sp)				# $sp + 56番地
+のアドレスから$fpの値を復元
+    82		addu	$sp,$sp,64			# スタックの解放
+    83		j	$ra						# 呼び
+出し元に戻る
+    84	
+    85		.comm	_primes_stat,40		# データセグメントに40バ
+イト確保
+
 \end{Verbatim}
 
 \subsection{課題2-5で用いたコード} \label{sec:p2-5}
