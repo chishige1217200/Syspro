@@ -72,7 +72,9 @@
 
 \subsection{課題2-5}
 続いて，\ref{sec:p2-5}節に示すデモプログラムについて説明する．
-まずプログラムの動作を支える\verb|void myprintf(char *fmt, ...)|関数，\verb|void myscanf(char *fmt, ...)|関数とその付属関数について説明する．
+まずプログラムの動作を支える\verb|void myprintf(char|
+
+\noindent\verb| *fmt, ...)|関数，\verb|void myscanf(char *fmt, ...)|関数とその付属関数について説明する．
 
 \verb|void print_char(char c)|関数は，1文字を表示する関数で，MIPS言語のシステム・コールでは\verb|print_string(char *)|の形を利用するため，任意の1文字と終端文字をつなぎ合わせた長さ2の配列を作り，その先頭アドレスを\verb|print_string(char *)|に渡す処理を行う．
 
@@ -160,9 +162,106 @@
 \section{プログラムの使用法と実行結果}\label{sec:howresult}
 
 プログラムは，CentOS 7.6.1810 (Core) のxspimとターミナルで動作を確認している．まず，ターミナルに\verb|xspim &|と打ち込んで，xspimを実行する．
-実行後にloadの機能を使い，拡張子が\verb|.s|のアセンブリファイルを読み込む．runの機能で読み込んだプログラムを走らせる．プログラムを走らせた後，もう一度プログラムを走らせる場合には\verb|clear|でメモリとレジスタの値を初期化した後，再度ロードする必要がある．\verb|syscalls.s|を用いるプログラムの場合は，最後にこれを読み込ませる．
+実行後にloadの機能を使い，拡張子が\verb|.s|のアセンブリファイルを読み込む．runの機能で読み込んだプログラムを走らせる．プログラムを走らせた後，もう一度プログラムを走らせる場合には\verb|clear|でメモリとレジスタの値を初期化した後，再度ロードする必要がある．\verb|syscalls.s|（\ref{sec:syscall}節）を用いるプログラムの場合は，最後にこれを読み込ませる．なお，課題2-5のデモプログラムは32bitバイナリを実行し，その実行結果を載せている．
 
+\subsection{課題2-1}
+実行結果は次のとおりである．初めに円盤の枚数を尋ねられるので，円盤の枚数を指定する．
 
+\begin{Verbatim}
+Enter number of disks> 4
+Move disk 1 from peg 1 to peg 3.
+Move disk 2 from peg 1 to peg 2.
+Move disk 1 from peg 3 to peg 2.
+Move disk 3 from peg 1 to peg 3.
+Move disk 1 from peg 2 to peg 1.
+Move disk 2 from peg 2 to peg 3.
+Move disk 1 from peg 1 to peg 3.
+Move disk 4 from peg 1 to peg 2.
+Move disk 1 from peg 3 to peg 2.
+Move disk 2 from peg 3 to peg 1.
+Move disk 1 from peg 2 to peg 1.
+Move disk 3 from peg 3 to peg 2.
+Move disk 1 from peg 1 to peg 3.
+Move disk 2 from peg 1 to peg 2.
+Move disk 1 from peg 3 to peg 2.
+\end{Verbatim}
+
+よって，\verb|hanoi.c|（\ref{sec:hanoi.c}節）をアセンブリした\verb|hanoi.s|（\ref{sec:hanoi.s}節）が正しく動作していることが確認できた．
+
+\subsection{課題2-5}
+以下の実行例は，プログラム実行中の動作例を模擬するため，
+任意のtxtファイルを標準入力のリダイレクションにより与えることで，実行する例を示している．
+通常の利用においては，キーボードから文字列を入力してもよい．
+
+{\fontsize{10pt}{11pt} \selectfont
+ \begin{verbatim}
+   $ ./a.out < test.txt
+ \end{verbatim}
+}
+
+以上のようにして，ファイルを標準入力のリダイレクションで与え，32bitバイナリを実行する．
+\verb|test.txt|の中身は次のとおりである．
+\begin{Verbatim}[fontsize=\small, baselinestretch=0.8]
+     1	+
+     2	4
+     3	0
+     4	y
+     5	-
+     6	2
+     7	*
+     8	6
+     9	/
+    10	3
+    11	+
+    12	4
+    13	c
+    14	h
+    15	y
+    16	q
+\end{Verbatim}
+
+これをリダイレクションで与えて得られる出力は次のとおりである．
+
+\begin{Verbatim}[fontsize=\small, baselinestretch=0.8]
+Starting calculator...
+Please select the calc mode. ("+" or "-" or "*" or "/" or "0" or "c" or "h" or "q")
+Mode? : Please input the number.(int type ONLY)
+Number? : Result : 4
+
+Please select the calc mode. ("+" or "-" or "*" or "/" or "0" or "c" or "h" or "q")
+Mode? : Do you want to reset calculation result? (y or N)
+Reset calculation result.
+
+Please select the calc mode. ("+" or "-" or "*" or "/" or "0" or "c" or "h" or "q")
+Mode? : Please input the number.(int type ONLY)
+Number? : Result : -2
+
+Please select the calc mode. ("+" or "-" or "*" or "/" or "0" or "c" or "h" or "q")
+Mode? : Please input the number.(int type ONLY)
+Number? : Result : -12
+
+Please select the calc mode. ("+" or "-" or "*" or "/" or "0" or "c" or "h" or "q")
+Mode? : Please input the number.(int type ONLY)
+Number? : Result : -4
+
+Please select the calc mode. ("+" or "-" or "*" or "/" or "0" or "c" or "h" or "q")
+Mode? : Please input the number.(int type ONLY)
+Number? : Result : 0
+
+Please select the calc mode. ("+" or "-" or "*" or "/" or "0" or "c" or "h" or "q")
+Mode? : Result : 0
+
+Please select the calc mode. ("+" or "-" or "*" or "/" or "0" or "c" or "h" or "q")
+Mode? : Do you want to calc +4 again? (y or N)
+Calculated +4 again.
+Result : 4
+
+Please select the calc mode. ("+" or "-" or "*" or "/" or "0" or "c" or "h" or "q")
+Mode? : FINAL RESULT : 4
+Quit.
+\end{Verbatim}
+
+電卓のすべての機能が正しく動作していることが確認できた．
 
 %--------------------------------------------------------------------%
 \section{考察} \label{sec:review}
