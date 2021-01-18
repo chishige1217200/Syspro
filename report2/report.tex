@@ -66,7 +66,7 @@
 
 処理でスタックを確保する必要があるため，\verb|.text|によりテキストセグメントにプログラムを配置する．続いて\verb|.align 2|により次の命令が配置されるメモリ上のアドレスを4バイト境界に整列する．4行目の\verb|_print_int|ラベルから始まる一連の処理は，C言語のソースコードから\verb|print_int()|で呼び出せる処理に相当する．まず\verb|subu|命令でスタックを24バイト確保し，\verb|sw|命令で\verb|$ra|レジスタの値を\verb|$sp + 20|のメモリ上のアドレスに退避する．\verb|li|命令で\verb|$v0|レジスタに1を代入し，システム・コール・コード1である\verb|print_int|を指定する．\verb|syscall|により，システム・コールを行う．その後，\verb|lw|命令で\verb|$ra|レジスタの値をスタックから復元し，\verb|addu|命令でスタックを開放する，\verb|j $ra|により呼び出し元に処理を戻す．
 
-他の\verb|print_string|，\verb|read_int|，\verb|read_string|においては，システム・コール・コードがそれぞれ$4$，$5$，$8$となっていること以外は共通の処理を行っているため，ここでは触れない．
+他の\verb|print_string|，\verb|read_int|，\verb|read_string|においては，システム・コール・コードがそれぞれ$4$，$5$，$8$となっていること以外は共通の処理を行っているため，ここでは触れない．なお，\verb|print_int|は実行時の引数に\verb|int|，\verb|print_string|は\verb|char *|，\verb|read_string|は\verb|char *|，\verb|int|の値をそれぞれ渡す必要がある．
 
 
 
@@ -270,24 +270,61 @@ Quit.
 \section{考察} \label{sec:review}
 
 \subsection{課題2-2}
-spim-gccを用いてコンパイルを行った場合の\verb|hanoi.s|（\ref{sec:hanoi.s}節）のスタックの確保の一連の処理を見ると，31行目からの処理
+spim-gccを用いてコンパイルを行った場合の\verb|hanoi.s|（\ref{sec:hanoi.s}節）のスタックの確保の一連の処理
 
-\noindent \verb|subu $sp, $sp 24|
+\begin{Verbatim}[fontsize=\small, baselinestretch=0.8]
+subu    $sp,$sp,24
+sw      $ra,20($sp)
+sw      $fp,16($sp)
+move    $fp,$sp
+sw      $a0,24($fp)
+sw      $a1,28($fp)
+sw      $a2,32($fp)
+sw      $a3,36($fp)
+\end{Verbatim}
 
-\noindent でスタックポインタの値を$24$減少させる．減少させた後，\verb|sw|命令で\verb|$ra|レジスタの値を\verb|20($sp)|，\verb|fp|レジスタの値を16\verb|($sp)|で示されるメモリ上のアドレスに保存する．これは更新前の\verb|$sp|レジスタから見ると，それぞれ$-4$，$-8$されたメモリ上のアドレスを指していることが分かる．同様に\verb|$a0|～\verb|$a3|レジスタの例について考えると，更新前の\verb|$sp|レジスタから見た場合，それぞれ$0$，$4$，$8$，$12$されたメモリ上のアドレスを指している．つまり更新前の\verb|$sp|レジスタより大きいメモリ上のアドレスを指しているため，呼出し側のスタック領域に格納されたことになる．
+を見ると，まず\verb|subu|命令でスタックポインタの値を$24$減少させる．減少させた後，\verb|sw|命令で\verb|$ra|レジスタの値を\verb|20($sp)|，\verb|fp|レジスタの値を16\verb|($sp)|で示されるメモリ上のアドレスに保存する．これは更新前の\verb|$sp|レジスタから見ると，それぞれ$-4$，$-8$されたメモリ上のアドレスを指していることが分かる．同様に\verb|$a0|～\verb|$a3|レジスタの例について考えると，更新前の\verb|$sp|レジスタから見た場合，それぞれ$0$，$4$，$8$，$12$されたメモリ上のアドレスを指している．つまり更新前の\verb|$sp|レジスタより大きいメモリ上のアドレスを指しているため，呼出し側のスタック領域に格納されたことになる．
 
 これを整理すると表\ref{}のようになり，各関数のスタック領域はその関数が呼び出されたときの\verb|$fp|レジスタ及び\verb|$ra|レジスタの値，そしてその関数が他の関数を呼び出したときの\verb|$a0|～\verb|$a3|レジスタの値で構成される．それぞれが\verb|32bit|の値であるから計$24$バイト必要となる．もし第5引数以上を要する場合は，$4$バイト$*$（追加で必要な引数の個数）分多くスタックを確保すれば新\verb|$sp|基準で格納される．もし，24バイトより少なく確保してしまうと，次のスタックを確保する際に確保済みのスタックの情報が上書きされ，正しくプログラムが動作しない恐れがある．
 
-% 頭を入れてください！！
+% 表を入れてください！！
 
 \subsection{課題2-3}
-\verb|report2-1.s|（\ref{sec:report2-1.s}節）をもとに\verb|auto|変数と\verb|static|変数について考察すると，64行目からの\verb|main|ラベルの処理で64バイトのスタックを確保している．このスタック領域に値を保存しているのが\verb|auto|変数である．値は\verb|$fp|レジスタ，\verb|$sp|レジスタの値にオフセットを合わせて，\verb|lw|命令や\verb|sw|命令でアクセスするため，他の関数を呼び出し，新たにスタックを確保した後にアクセスすることは困難であり，スタックを開放するとアクセスすることは不可能となる．
+\verb|report2-1.s|（\ref{sec:report2-1.s}節）をもとに\verb|auto|変数と\verb|static|変数について考察すると，64行目からの\verb|main|ラベルの処理
+\begin{Verbatim}[fontsize=\small, baselinestretch=0.8]
+subu	$sp,$sp,64		# スタックの積立て（64バイト）
+sw	$ra,60($sp)		# $sp + 60番地のアドレスに$raの値をバックアップ
+sw	$fp,56($sp)		# $sp + 56番地のアドレスに$fpの値をバックアップ
+move	$fp,$sp		# $spの値で$fpを上書き
+li	$v0,2			# 0x2
+sw	$v0,_primes_stat	# _primes_statに対応するラベルのメモリ上のアドレスに$v0の値を保存
+li	$v0,3			# 0x3
+sw	$v0,16($fp)		# $fp($sp) + 16番地のアドレスに$v0の値をバックアップ
+\end{Verbatim}
+で64バイトのスタックを確保している．このスタック領域に値を保存しているのが\verb|auto|変数である．値は\verb|$fp|レジスタ，\verb|$sp|レジスタの値にオフセットを合わせて，\verb|lw|命令や\verb|sw|命令でアクセスするため，他の関数を呼び出し，新たにスタックを確保した後にアクセスすることは困難であり，スタックを開放するとアクセスすることは不可能となる．それに対し\verb|static|変数は，データセグメントにあらかじめ長さを決めて確保した領域に値を保存する．変数はラベルを用いてアクセスされるため，他の関数からのアクセスもラベルを使用することで容易にできる．これらの特徴から\verb|auto|変数はスタックを開放し関数が終了してしまうとアクセス不能になり，データセグメントに確保した\verb|static|変数はプログラムを終了するまでアクセス可能であることが分かる．
 
-それに対し\verb|static|変数は，データセグメントにあらかじめ長さを決めて確保した領域に値を保存する．変数はラベルを用いてアクセスされるため，他の関数からのアクセスもラベルを使用することで容易にできる．
+続いて\verb|report2-1.c|の次の部分で，ポインタと配列について考える．
+\begin{Verbatim}[fontsize=\small, baselinestretch=0.8]
+char * string_ptr   = "ABCDEFG";
+char   string_ary[] = "ABCDEFG";
+\end{Verbatim}
 
-これらの特徴から\verb|auto|変数は，スタックを開放し関数が終了してしまうと値にアクセス不能になり，データセグメントに確保した\verb|static|変数はプログラムを終了するまでアクセス可能であることが分かる．
+\noindent これに対応する\verb|report2-1.s|は，次のとおりである．
+\begin{Verbatim}[fontsize=\small, baselinestretch=0.8]
+	.rdata			# 読み取り専用データセグメント
+	.align	2		# バイト揃え
+$LC0:
+ 	.asciiz	"ABCDEFG"	# 文字列情報
+ 	.data			# データセグメント
+ 	.align	2		# バイト揃え
+ _string_ptr:			# ポインタ
+ 	.word	$LC0		# アドレスを参照
+ 	.align	2		# バイト揃え
+ _string_ary:				# 配列
+ 	.asciiz	"ABCDEFG"	# 文字列情報
+\end{Verbatim}
 
-
+MIPSアセンブリにおいて確保されたポインタは，ここでは\verb|_string_ptr|ラベルから始まる部分に格納されており，ここはデータセグメントである．ポインタであるため，直に文字列情報が格納されているわけではなく，ポインタが指すアドレスの変数の値が文字列の実体である．ここでは\verb|$LC0|ラベルに対応する部分が該当する．なお，この\verb|$LC0|ラベルの部分は読み取り専用データセグメントとなっており，例えばC言語で\verb|*ptr = 'a'|と値を上書きできないことが分かる．MIPSアセンブリにおいて確保された配列は，\verb|_string_ary|ラベルの部分であり，ここに文字列情報を格納している．このラベルのアドレスを基準に文字列情報にアクセス可能で，\verb|$LC0|とは異なりデータセグメントであるため，上書きも可能である．
 
 
 \subsection{課題2-4}
@@ -544,8 +581,7 @@ no
     12	 # -mrnames -mno-check-zero-division -march=r2000
     13	
     14	
-    15		.rdata				# 読み取り専用データセ
-グメント
+    15		.rdata			# 読み取り専用データセグメント
     16		.align	2			# バイト揃え
     17	$LC0:
     18		.asciiz	"ABCDEFG"	# 文字列情報
@@ -556,8 +592,7 @@ no
     23		.align	2			# バイト揃え
     24	_string_ary:			# 配列
     25		.asciiz	"ABCDEFG"	# 文字列情報
-    26		.rdata				# 読み取り専用データセ
-グメント
+    26		.rdata			# 読み取り専用データセグメント
     27		.align	2			# バイト揃え
     28	$LC1:
     29		.asciiz	" = "		# 文字列情報
@@ -586,8 +621,7 @@ $fpの値をバックアップ
     46		lw	$a0,28($fp)		# 元$a1の値のバックアッ
 プをスタックからロード（同時にprint_stringの引数に）
     47		jal	_print_int		# print_intの呼び出し
-    48		la	$a0,$LC2		# "\n"を指すアドレスを$a
-0にロード
+    48		la	$a0,$LC2	# "\n"を指すアドレスを$a0にロード
     49		jal	_print_string	# print_stringの呼び出し
     50		move	$sp,$fp		# $fpの値で$spを上書き
     51		lw	$ra,20($sp)		# $sp + 20番地のアドレスか
@@ -596,57 +630,47 @@ $fpの値をバックアップ
 ら$fpの値を復元
     53		addu	$sp,$sp,24	# スタックの解放
     54		j	$ra				# 呼び出し元に戻る
-    55		.rdata				# 読み取り専用テキスト
-セグメント
+    55		.rdata			# 読み取り専用データセグメント
     56		.align	2			# バイト揃え
     57	$LC3:
     58		.asciiz	"primes_stat[0]"	# 文字列情報
-    59		.align	2					# バイト揃え
+    59		.align	2			# バイト揃え
     60	$LC4:
     61		.asciiz	"primes_auto[0]"	# 文字列情報
-    62		.text						# テキストセ
-グメント
-    63		.align	2					# バイト揃え
+    62		.text					# テキストセグメント
+    63		.align	2			# バイト揃え
     64	main:
-    65		subu	$sp,$sp,64			# スタックの積立て
-（64バイト）
+    65		subu	$sp,$sp,64		# スタックの積立て（64バイト）
     66		sw	$ra,60($sp)				# $sp + 60番地
 のアドレスに$raの値をバックアップ
     67		sw	$fp,56($sp)				# $sp + 56番地
 のアドレスに$fpの値をバックアップ
-    68		move	$fp,$sp				# $spの値で$fpを上書
-き
+    68		move	$fp,$sp			# $spの値で$fpを上書き
     69		li	$v0,2					# 0x2
     70		sw	$v0,_primes_stat		# _primes_statに対応す
 るラベルのメモリ上のアドレスに$v0の値を保存
     71		li	$v0,3					# 0x3
-    72		sw	$v0,16($fp)				# $fp($sp) + 16番
-地のアドレスに$v0の値をバックアップ
+    72		sw	$v0,16($fp)				# $fp($sp) + 16
+番地のアドレスに$v0の値をバックアップ
     73		la	$a0,$LC3				# "primes_stat[0
 ]"を指すアドレスを$a0にロード
     74		lw	$a1,_primes_stat		# _primes_statに対応す
 るラベルのメモリ上のアドレスの値を$a1にロード
-    75		jal	_print_var				# print_varの呼
-び出し
+    75		jal	_print_var			# print_varの呼び出し
     76		la	$a0,$LC4				# "primes_auto[0
 ]"を指すアドレスを$a0にロード
     77		lw	$a1,16($fp)				# 元$v0の値の
-バックアップをスタックから$a1にロード（同時にprint_stringの
-引数に）
-    78		jal	_print_var				# print_varの呼
-び出し
-    79		move	$sp,$fp				# $fpの値で$spを上書
-き
+バックアップをスタックから$a1にロード（同時にprint_stringの引数に）
+    78		jal	_print_var			# print_varの呼び出し
+    79		move	$sp,$fp			# $fpの値で$spを上書き
     80		lw	$ra,60($sp)				# $sp + 60番地
 のアドレスから$raの値を復元
     81		lw	$fp,56($sp)				# $sp + 56番地
 のアドレスから$fpの値を復元
     82		addu	$sp,$sp,64			# スタックの解放
-    83		j	$ra						# 呼び
-出し元に戻る
+    83		j	$ra				# 呼び出し元に戻る
     84	
-    85		.comm	_primes_stat,40		# データセグメントに40バ
-イト確保
+    85		.comm	_primes_stat,40	# データセグメントに40バイト確保
 
 \end{Verbatim}
 
@@ -761,20 +785,17 @@ xspimで実行する場合は，1行目の\verb|#include "spim.h"|は不要で�
    106	            fmt++; // 検索対象文字列を1文字右へ
    107	            switch (*fmt)
    108	            {
-   109	            case 'd':                                           // 数
-値の入力
+   109	            case 'd':  // 数値の入力
    110	                i = *((int **)((char *)&fmt + sizeof(void *))); // 代
 入先情報
    111	                *i = read_int();
    112	                break;
-   113	            case 's':                                            // 文
-字列の入力
+   113	            case 's':  // 文字列の入力
    114	                s = *((char **)((char *)&fmt + sizeof(void *))); // 代
 入先情報
    115	                read_string(s, 1025);
    116	                break;
-   117	            case 'c':                                            // 1文
-字入力
+   117	            case 'c':  // 1文字入力
    118	                c = *((char **)((char *)&fmt + sizeof(void *))); // 代
 入先情報
    119	                *c = read_char();
